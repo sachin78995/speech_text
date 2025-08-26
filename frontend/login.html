@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Log in</title>
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+	<div class="container">
+		<div class="auth-layout">
+			<div class="auth-hero">
+				<div>
+					<h1 style="color:#fff; margin:0 0 8px 0;">Welcome back</h1>
+					<p style="color:#e9e8ff; margin:0;">Log in to continue</p>
+				</div>
+			</div>
+			<div class="auth-form">
+				<h2>Log in</h2>
+				<form id="loginForm">
+					<div class="field">
+						<label for="email">Email</label>
+						<input id="email" type="email" required />
+					</div>
+					<div class="field">
+						<label for="password">Password</label>
+						<input id="password" type="password" required />
+					</div>
+					<button type="submit">Log in</button>
+					<p id="error" class="error" style="display:none;"></p>
+				</form>
+				<p class="muted" style="margin-top:12px;">No account? <a href="register.html">Create one</a></p>
+			</div>
+		</div>
+	</div>
+
+	<script>
+	(function(){
+		if (localStorage.getItem('auth_user')) {
+			window.location.href = 'index.html';
+			return;
+		}
+		const apiBase = 'http://localhost:5000/api';
+		const form = document.getElementById('loginForm');
+		const errorEl = document.getElementById('error');
+
+		form.addEventListener('submit', async function(e){
+			e.preventDefault();
+			errorEl.style.display = 'none';
+			const body = {
+				email: document.getElementById('email').value.trim(),
+				password: document.getElementById('password').value
+			};
+			try {
+				const res = await fetch(`${apiBase}/login`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(body)
+				});
+				if (!res.ok) {
+					const err = await res.json().catch(() => ({ error: 'Login failed' }));
+					throw new Error(err.error || 'Login failed');
+				}
+				const user = await res.json();
+				localStorage.setItem('auth_user', JSON.stringify(user));
+				window.location.href = 'index.html';
+			} catch (err) {
+				errorEl.textContent = err.message || 'Login failed';
+				errorEl.style.display = 'block';
+			}
+		});
+	})();
+	</script>
+</body>
+</html>
+
+
+
+
+

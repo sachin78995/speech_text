@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <title>Speech To Text - Modern UI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Speech To Text</h1>
+
+    <div class="card">
+      <h2><span class="icon">🎤</span> Live Audio Recording</h2>
+      <div class="controls">
+        <label>
+          Language:
+          <select id="language">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="hi-IN">Hindi (India)</option>
+            <option value="ta-IN">Tamil (India)</option>
+          </select>
+        </label>
+        <button id="startBtn"><i class="fa fa-microphone"></i></button>
+        <button id="stopBtn" disabled>Stop</button>
+        <button id="saveBtn" disabled>Save</button>
+      </div>
+      <textarea id="transcript" rows="8" placeholder="Your speech will appear here..."></textarea>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⌨️</span> Recent Transcripts</h2>
+      <ul id="items"></ul>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
