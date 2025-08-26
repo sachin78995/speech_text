@@ -3,12 +3,12 @@ from flask import Flask, jsonify, redirect, request
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Import configuration, database, and models
+# Importing config, database, and models
 try:
-    from .config import Config
-    from .database import Base, SessionLocal, engine
-    from .models import Transcript, User
-except ImportError:  # Running as a script
+    from config import Config
+    from database import Base, SessionLocal, engine
+    from models import Transcript, User
+except ImportError:
     import sys
     from pathlib import Path
     sys.path.append(str(Path(__file__).resolve().parent))
@@ -18,31 +18,31 @@ except ImportError:  # Running as a script
 
 
 def create_app() -> Flask:
-    """Create Flask application"""
+    """Create and configure the Flask app"""
     app = Flask(__name__)
     app.config["SECRET_KEY"] = Config.SECRET_KEY
     app.debug = Config.DEBUG
 
-    # Enable CORS for frontend requests
+    # Enable CORS for API requests
     CORS(app, resources={r"/api/*": {"origins": Config.FRONTEND_ORIGIN}})
 
     # Initialize database tables
     with app.app_context():
         Base.metadata.create_all(bind=engine)
 
-    # ------------------ ROUTES ------------------
+    # -------------------- ROUTES --------------------
 
     @app.get("/")
     def index():
-        """Redirect to frontend"""
+        """Redirect to the frontend"""
         return redirect(Config.FRONTEND_URL, code=302)
 
     @app.get("/api/health")
-    def health() -> tuple:
+    def health():
         """Health check endpoint"""
         return jsonify({"status": "ok", "time": datetime.utcnow().isoformat()}), 200
 
-    # ------------------ TRANSCRIPTS ------------------
+    # -------------------- TRANSCRIPTS --------------------
 
     @app.post("/api/transcripts")
     def create_transcript():
@@ -51,7 +51,7 @@ def create_app() -> Flask:
         text = (payload.get("text") or "").strip()
         language = payload.get("language")
         if not text:
-            return jsonify({"error": "text is required"}), 400
+            return jsonify({"error": "Text is required"}), 400
 
         db = SessionLocal()
         try:
@@ -70,7 +70,7 @@ def create_app() -> Flask:
 
     @app.get("/api/transcripts")
     def list_transcripts():
-        """List latest transcripts"""
+        """List all transcripts"""
         db = SessionLocal()
         try:
             items = db.query(Transcript).order_by(Transcript.id.desc()).limit(100).all()
@@ -92,7 +92,7 @@ def create_app() -> Flask:
         try:
             item = db.get(Transcript, item_id)
             if not item:
-                return jsonify({"error": "not found"}), 404
+                return jsonify({"error": "Transcript not found"}), 404
             return jsonify({
                 "id": item.id,
                 "text": item.text,
@@ -102,7 +102,7 @@ def create_app() -> Flask:
         finally:
             db.close()
 
-    # ------------------ USER AUTH ------------------
+    # -------------------- USER AUTH --------------------
 
     @app.post("/api/register")
     def register_user():
@@ -145,7 +145,7 @@ def create_app() -> Flask:
 
     @app.post("/api/login")
     def login_user():
-        """User login"""
+        """Login a user"""
         payload = request.get_json(force=True) or {}
         email = (payload.get("email") or "").strip().lower()
         password = (payload.get("password") or "").strip()
@@ -172,10 +172,13 @@ def create_app() -> Flask:
     return app
 
 
-# ------------------ APP ENTRY POINT ------------------
-# For local development and Render deployment
+# -------------------- ENTRY POINT --------------------
+
+# For local development: python app.py
 if __name__ == "__main__":
     app = create_app()
     app.run(host="0.0.0.0", port=5000)
+
+# For Render / Gunicorn deployment
 else:
     app = create_app()
